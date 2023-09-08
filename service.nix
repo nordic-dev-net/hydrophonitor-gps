@@ -1,7 +1,11 @@
-{ config, pkgs, lib, ... }: let
-  gpsRecorder = pkgs.callPackage ./default.nix {};
-in
 {
+  config,
+  pkgs,
+  lib,
+  ...
+}: let
+  gpsRecorder = pkgs.callPackage ./default.nix {};
+in {
   options = {
     services.gps-recorder = {
       enable = lib.mkOption {
@@ -33,11 +37,11 @@ in
   config = lib.mkIf config.services.gps-recorder.enable {
     services.gpsd = {
       enable = true;
-      devices = [ "/dev/ttyUSB0" ];
+      devices = ["/dev/ttyUSB0"];
     };
     systemd.services.gps-recorder = {
       description = "GPS Recording Service";
-      wantedBy = [ "multi-user.target" ];
+      wantedBy = ["multi-user.target"];
       script = ''
         ${pkgs.coreutils}/bin/mkdir -p ${config.services.gps-recorder.output-folder}
         ${gpsRecorder}/bin/gps-recorder --output ${config.services.gps-recorder.output-folder} --interval ${toString config.services.gps-recorder.interval-secs}
