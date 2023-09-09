@@ -9,11 +9,6 @@ in {
   options = {
     services.gps-recorder = {
       enable = lib.mkEnableOption "Whether to enable the gps recording service.";
-      package = lib.mkOption {
-        type = lib.types.str;
-        default = gpsRecorder;
-        description = "The package to use for the gps recorder.";
-      };
 
       output-folder = lib.mkOption {
         type = lib.types.str;
