@@ -28,18 +28,6 @@
         formatter = nixpkgs.legacyPackages.${system}.alejandra;
       }
       ) // {
-        nixosModules = let
-          config = import ./service.nix {
-            inherit nixpkgs;
-          };
-          pkgs = import nixpkgs {
-            system = "aarch64-linux";
-          };
-          lib = import nixpkgs.lib;
-        in{
-          hydrophonitor-gps = import ./service.nix {
-            inherit config pkgs lib;
-          };
-        };
+        nixosModules.hydrophonitor-gps = import ./service.nix;
       };
 }
