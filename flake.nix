@@ -23,15 +23,15 @@
         pkgs = import nixpkgs {
           inherit system;
         };
-        service = import ./service.nix {
-          inherit pkgs;
-        };
       in {
         packages.default = nixpkgs.legacyPackages.${system}.callPackage ./default.nix {};
-        nixosModules.hydrophonitor-gps = import ./service.nix {
-          inherit pkgs;
-        };
         formatter = nixpkgs.legacyPackages.${system}.alejandra;
       }
-    );
+      ) // {
+        nixosModules = {
+          hydrophonitor-gps = import ./service.nix {
+            inherit nixpkgs;
+          };
+        };
+      };
 }
