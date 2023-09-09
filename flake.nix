@@ -28,6 +28,9 @@
         };
       in {
         packages.default = nixpkgs.legacyPackages.${system}.callPackage ./default.nix {};
+        nixosModules.hydrophonitor-gps = import ./service.nix {
+          inherit pkgs;
+        };
         formatter = nixpkgs.legacyPackages.${system}.alejandra;
       }
     );
