@@ -44,6 +44,8 @@ in {
       description = "GPS Recording Service";
       wantedBy = ["multi-user.target"];
       script = ''
+        #!/usr/bin/env bash
+        set -x
         ${pkgs.coreutils}/bin/mkdir -p ${config.services.gps-recorder.output-folder}
         ${gpsRecorder}/bin/gps-recorder --output-path ${config.services.gps-recorder.output-folder} --interval ${toString config.services.gps-recorder.interval-secs}
       '';
