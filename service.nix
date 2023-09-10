@@ -45,7 +45,7 @@ in {
       wantedBy = ["multi-user.target"];
       script = ''
         ${pkgs.coreutils}/bin/mkdir -p ${config.services.gps-recorder.output-folder}
-        ${gpsRecorder}/bin/gps-recorder --output ${config.services.gps-recorder.output-folder} --interval ${toString config.services.gps-recorder.interval-secs}
+        ${gpsRecorder}/bin/gps-recorder --output-path ${config.services.gps-recorder.output-folder} --interval ${toString config.services.gps-recorder.interval-secs}
       '';
       serviceConfig = {
         User = "root"; # Replace with appropriate user
