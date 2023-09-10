@@ -187,7 +187,7 @@ dependencies = [
 [[package]]
 name = "gpsd_proto"
 version = "0.7.0"
-source = "git+https://github.com/juliuskoskela/gpsd_proto?rev=fbf3f9d#fbf3f9d0e350c7a774e8cc2079aafa02ad1312f1"
+source = "git+https://github.com/juliuskoskela/gpsd_proto?rev=c518e1d#c518e1dfa165e3162d3d93a1bbcc2b0d1b472e06"
 dependencies = [
  "log",
  "serde",
