@@ -125,7 +125,7 @@ impl GpsRecorder {
             eprintln!("Error connecting to GPSD");
             std::process::exit(1);
         };
-        let filename = format!("{}_GPS_data.csv", Utc::now().format("%Y-%m-%dT%H-%M-%S"));
+        let filename = format!("{}_GPS_data.json", Utc::now().format("%Y-%m-%dT%H-%M-%S"));
         let file_path = path.join(filename);
         File::create(&file_path).unwrap();
         Self {
