@@ -1,9 +1,12 @@
 {
-  description = "GPS recorder for Hydrophonitor";
+  description = ''
+    GPSD - Logger
+
+    This is a service that logs GPS data to a file using `gpsd`.
+  '';
 
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
-
     flake-utils.url = "github:numtide/flake-utils";
   };
 
@@ -26,8 +29,10 @@
       in {
         packages.default = nixpkgs.legacyPackages.${system}.callPackage ./default.nix {};
         formatter = nixpkgs.legacyPackages.${system}.alejandra;
+        devShell = nixpkgs.legacyPackages.${system}.callPackage ./shell.nix {};
       }
-      ) // {
-        nixosModules.hydrophonitor-gps = import ./service.nix;
-      };
+    )
+    // {
+      nixosModules.hydrophonitor-gps = import ./service.nix;
+    };
 }

@@ -9,6 +9,7 @@ in {
   options = {
     services.gps-recorder = {
       enable = lib.mkEnableOption "Whether to enable the gps recording service.";
+
       package = lib.mkOption {
         type = lib.types.str;
         default = gpsRecorder;
@@ -21,16 +22,34 @@ in {
         description = "The folder to save recordings to.";
       };
 
-      interval-secs = lib.mkOption {
+      interval = lib.mkOption {
         type = lib.types.int;
         default = 600;
         description = "The interval in seconds in which GPS is recorded.";
       };
 
-      gps-search-duration-ms = lib.mkOption {
+      devices = lib.mkOption {
+        type = lib.types.listOf lib.types.str;
+        default = ["/dev/ttyUSB0"];
+        description = "The devices to use for GPS recording.";
+      };
+
+      user = lib.mkOption {
+        type = lib.types.str;
+        default = "root";
+        description = "The user to run the gps recorder as.";
+      };
+
+      hostname = lib.mkOption {
+        type = lib.types.str;
+        default = "localhost";
+        description = "The hostname to use for the gps recorder.";
+      };
+
+      port = lib.mkOption {
         type = lib.types.int;
-        default = 1000;
-        description = "Time in milliseconds that is spent listening for GPS data for one observation.";
+        default = 2947;
+        description = "The port to use for the gps recorder.";
       };
     };
   };
@@ -38,21 +57,29 @@ in {
   config = lib.mkIf config.services.gps-recorder.enable {
     services.gpsd = {
       enable = true;
-      devices = ["/dev/ttyUSB0"];
+      devices = config.services.gps-recorder.devices;
     };
     systemd.services.gps-recorder = {
       description = "GPS Recording Service";
       wantedBy = ["multi-user.target"];
+
       script = ''
         #!/usr/bin/env bash
         set -x
         ${pkgs.coreutils}/bin/mkdir -p ${config.services.gps-recorder.output-folder}
-        ${gpsRecorder}/bin/gps-recorder --output-path ${config.services.gps-recorder.output-folder} --interval ${toString config.services.gps-recorder.interval-secs}
+        ${gpsRecorder}/bin/gps-recorder \
+        -o ${config.services.gps-recorder.output-folder} \
+        -i ${toString config.services.gps-recorder.interval-secs} \
+        -h ${config.services.gps-recorder.hostname} \
+        -p ${toString config.services.gps-recorder.port} \
       '';
+
       serviceConfig = {
-        User = "root"; # Replace with appropriate user
+        User = config.services.gps-recorder.user;
         Restart = "always";
       };
+
+      # FIX! Is this needed?
       startLimitIntervalSec = 0;
     };
   };
