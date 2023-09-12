@@ -32,6 +32,7 @@ struct Cli {
 
 #[derive(Serialize, Deserialize)]
 struct GpsData {
+    timestamp: DateTime<Utc>,
     device: Option<ResponseData>,
     tpv: Option<ResponseData>,
     sky: Option<ResponseData>,
@@ -42,6 +43,7 @@ struct GpsData {
 impl GpsData {
     fn new() -> Self {
         Self {
+            timestamp: Utc::now(),
             device: None,
             tpv: None,
             sky: None,
