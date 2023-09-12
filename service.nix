@@ -78,9 +78,6 @@ in {
         User = config.services.gps-recorder.user;
         Restart = "always";
       };
-
-      # FIX! Is this needed?
-      startLimitIntervalSec = 0;
     };
   };
 }
