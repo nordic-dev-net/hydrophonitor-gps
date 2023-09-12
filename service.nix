@@ -16,7 +16,7 @@ in {
         description = "The package to use for the gps recorder.";
       };
 
-      output-folder = lib.mkOption {
+      output-path = lib.mkOption {
         type = lib.types.str;
         default = "/output/gps";
         description = "The folder to save recordings to.";
@@ -66,12 +66,12 @@ in {
       script = ''
         #!/usr/bin/env bash
         set -x
-        ${pkgs.coreutils}/bin/mkdir -p ${config.services.gps-recorder.output-folder}
+        ${pkgs.coreutils}/bin/mkdir -p ${config.services.gps-recorder.output-path}
         ${gpsRecorder}/bin/gps-recorder \
-        -o ${config.services.gps-recorder.output-folder} \
-        -i ${toString config.services.gps-recorder.interval-secs} \
-        -h ${config.services.gps-recorder.hostname} \
-        -p ${toString config.services.gps-recorder.port} \
+        --output-path ${config.services.gps-recorder.output-path} \
+        --interval ${toString config.services.gps-recorder.interval-secs} \
+        --hostname ${config.services.gps-recorder.hostname} \
+        --port ${toString config.services.gps-recorder.port} \
       '';
 
       serviceConfig = {
