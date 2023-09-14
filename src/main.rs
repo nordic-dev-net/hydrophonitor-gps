@@ -7,7 +7,6 @@ use std::fs::File;
 use std::io::Read;
 use std::io::{BufReader, BufWriter, Write};
 use std::net::TcpStream;
-use std::thread::sleep;
 use serde::{Deserialize, Serialize};
 use std::path::PathBuf;
 
@@ -18,17 +17,22 @@ struct Cli {
     #[clap(required = true, short, long)]
     output_path: PathBuf,
 
+    /// Hostname of the GPSD server
+    #[clap(short, long)]
+    hostname: Option<String>,
+
+    /// Port of the GPSD server
+    #[clap(short, long)]
+    port: Option<u16>,
+
     /// Interval between GPS data points in seconds
     #[clap(short, long)]
     interval: Option<u64>,
-
-    /// Time in milliseconds that is spent listening for GPS data for one observation.
-    #[clap(short, long)]
-    gps_search_duration: Option<u64>,
 }
 
 #[derive(Serialize, Deserialize)]
 struct GpsData {
+    timestamp: DateTime<Utc>,
     device: Option<ResponseData>,
     tpv: Option<ResponseData>,
     sky: Option<ResponseData>,
@@ -39,6 +43,7 @@ struct GpsData {
 impl GpsData {
     fn new() -> Self {
         Self {
+            timestamp: Utc::now(),
             device: None,
             tpv: None,
             sky: None,
@@ -114,11 +119,10 @@ struct GpsRecorder {
     stream: TcpStream,
     file_path: PathBuf,
     interval: Duration,
-    gps_search_duration: Duration,
 }
 
 impl GpsRecorder {
-    fn new(hostname: &str, path: &PathBuf, interval: u64, gps_search_duration: u64) -> Self {
+    fn new(hostname: &str, path: &PathBuf, interval: u64) -> Self {
         let stream = if let Ok(stream) = TcpStream::connect(hostname) {
             stream
         } else {
@@ -132,7 +136,6 @@ impl GpsRecorder {
             stream,
             file_path,
             interval: Duration::seconds(interval as i64),
-            gps_search_duration: Duration::milliseconds(gps_search_duration as i64),
         }
     }
 
@@ -141,14 +144,11 @@ impl GpsRecorder {
         let mut writer = BufWriter::new(&self.stream);
         handshake(&mut reader, &mut writer).unwrap();
         loop {
-            let now = Utc::now();
             let mut gps_data = GpsData::new();
             let mut gps_data_vec = GpsDataVec::read_file(&self.file_path);
-            gps_data.observe(&mut reader, &self.gps_search_duration);
+            gps_data.observe(&mut reader, &self.interval);
             gps_data_vec.append(gps_data);
             gps_data_vec.write_file(&self.file_path);
-            let remaining_time = self.interval - (Utc::now() - now);
-            sleep(remaining_time.to_std().unwrap());
         }
     }
 }
@@ -157,13 +157,11 @@ fn main() {
     let args = Cli::parse();
 
     let interval = args.interval.unwrap_or(10);
-    let gps_search_duration = args.gps_search_duration.unwrap_or(1000);
 
     let mut recorder = GpsRecorder::new(
         "localhost:2947",
         &args.output_path,
         interval,
-        gps_search_duration,
     );
     recorder.record();
 }
