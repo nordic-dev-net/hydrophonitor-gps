@@ -22,7 +22,7 @@ in {
         description = "The folder to save recordings to.";
       };
 
-      interval = lib.mkOption {
+      interval-secs = lib.mkOption {
         type = lib.types.int;
         default = 600;
         description = "The interval in seconds in which GPS is recorded.";
