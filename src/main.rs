@@ -2,7 +2,7 @@ use chrono::prelude::*;
 use chrono::Duration;
 use clap::Parser;
 use gpsd_proto::{get_data, handshake, ResponseData};
-// use log::{debug, info, warn};
+use log::{info, error};
 use std::fs::File;
 use std::io::Read;
 use std::io::{BufReader, BufWriter, Write};
@@ -78,7 +78,7 @@ impl GpsData {
             match get_data(reader) {
                 Ok(msg) => self.receive(msg),
                 Err(e) => {
-                    eprintln!("Error receiving data: {}", e);
+                    error!("Error receiving data: {}", e);
                     continue;
                 }
             }
@@ -126,11 +126,12 @@ impl GpsRecorder {
         let stream = if let Ok(stream) = TcpStream::connect(hostname) {
             stream
         } else {
-            eprintln!("Error connecting to GPSD");
+            error!("Error connecting to GPSD");
             std::process::exit(1);
         };
         let filename = format!("{}_GPS_data.json", Utc::now().format("%Y-%m-%dT%H-%M-%S"));
         let file_path = path.join(filename);
+        info!("Writing GPS data to {}", file_path.display());
         File::create(&file_path).unwrap();
         Self {
             stream,
@@ -146,6 +147,7 @@ impl GpsRecorder {
         loop {
             let mut gps_data = GpsData::new();
             let mut gps_data_vec = GpsDataVec::read_file(&self.file_path);
+            info!("Collecting GPS data for {} seconds", self.interval.num_seconds());
             gps_data.observe(&mut reader, &self.interval);
             gps_data_vec.append(gps_data);
             gps_data_vec.write_file(&self.file_path);
@@ -154,10 +156,12 @@ impl GpsRecorder {
 }
 
 fn main() {
-    let args = Cli::parse();
+    env_logger::init();
 
+    let args = Cli::parse();
     let interval = args.interval.unwrap_or(10);
 
+    info!("Start recording GPS data to {} with {} second interval", args.output_path.display(), interval);
     let mut recorder = GpsRecorder::new(
         "localhost:2947",
         &args.output_path,
