@@ -67,7 +67,7 @@ in {
         #!/usr/bin/env bash
         set -x
         ${pkgs.coreutils}/bin/mkdir -p ${config.services.gps-recorder.output-path}
-        ${gpsRecorder}/bin/gps-recorder \
+        RUST_LOG=info ${gpsRecorder}/bin/gps-recorder \
         --output-path ${config.services.gps-recorder.output-path} \
         --interval ${toString config.services.gps-recorder.interval-secs} \
         --hostname ${config.services.gps-recorder.hostname} \
@@ -78,6 +78,10 @@ in {
         User = config.services.gps-recorder.user;
         Restart = "always";
       };
+      unitConfig = {
+        After = ["multi-user.target"];
+      };
+      startLimitIntervalSec = 0;
     };
   };
 }
