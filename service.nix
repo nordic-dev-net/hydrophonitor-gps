@@ -16,10 +16,10 @@ in {
         description = "The package to use for the gps recorder.";
       };
 
-      output-path = lib.mkOption {
+      output-folder = lib.mkOption {
         type = lib.types.str;
-        default = "/output/gps";
-        description = "The folder to save recordings to.";
+        default = "gps";
+        description = "The folder to save recordings to within the deployment directory.";
       };
 
       interval-secs = lib.mkOption {
@@ -66,9 +66,11 @@ in {
       script = ''
         #!/usr/bin/env bash
         set -x
-        ${pkgs.coreutils}/bin/mkdir -p ${config.services.gps-recorder.output-path}
+        # DEPLOYMENT_DIRECTORY is set by the deployment-start service
+        OUTPUT_PATH=$DEPLOYMENT_DIRECTORY/${config.services.gps-recorder.output-folder}
+        ${pkgs.coreutils}/bin/mkdir -p $OUTPUT_PATH
         RUST_LOG=info ${gpsRecorder}/bin/gps-recorder \
-        --output-path ${config.services.gps-recorder.output-path} \
+        --output-path $OUTPUT_PATH \
         --interval ${toString config.services.gps-recorder.interval-secs} \
         --hostname ${config.services.gps-recorder.hostname} \
         --port ${toString config.services.gps-recorder.port} \
@@ -79,7 +81,7 @@ in {
         Restart = "always";
       };
       unitConfig = {
-        After = ["multi-user.target"];
+        After = ["multi-user.target" "deployment-start.service"];
       };
       startLimitIntervalSec = 0;
     };
